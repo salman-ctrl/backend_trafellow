@@ -1,5 +1,15 @@
 const Region = require('../models/Region');
 
+const createSlug = (text) => {
+  return text
+    .toString()
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, '-')
+    .replace(/[^\w\-]+/g, '')
+    .replace(/\-\-+/g, '-');
+};
+
 exports.getAllRegions = async (req, res) => {
   try {
     const regions = await Region.getAll();
@@ -43,6 +53,10 @@ exports.createRegion = async (req, res) => {
   try {
     const regionData = { ...req.body };
 
+    if (regionData.name) {
+      regionData.slug = createSlug(regionData.name);
+    }
+
     if (req.file) {
       regionData.image = req.file.path;
     }
@@ -74,6 +88,10 @@ exports.updateRegion = async (req, res) => {
         success: false,
         message: 'Region not found'
       });
+    }
+
+    if (updateData.name) {
+      updateData.slug = createSlug(updateData.name);
     }
 
     if (req.file) {

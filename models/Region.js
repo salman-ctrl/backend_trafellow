@@ -2,10 +2,11 @@ const db = require('../config/database');
 
 class Region {
   static async create(regionData) {
-    const { name, type, description, latitude, longitude, image } = regionData;
+    const { name, type, slug, description, latitude, longitude, image } = regionData;
+    
     const [result] = await db.query(
-      'INSERT INTO regions (name, type, description, latitude, longitude, image) VALUES (?, ?, ?, ?, ?, ?)',
-      [name, type, description, latitude, longitude, image]
+      'INSERT INTO regions (name, type, slug, description, latitude, longitude, image) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      [name, type, slug, description, latitude, longitude, image]
     );
     return result.insertId;
   }
