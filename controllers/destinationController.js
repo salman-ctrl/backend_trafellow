@@ -1,12 +1,7 @@
 const Destination = require('../models/Destination');
-const path = require('path');
-const fs = require('fs');
 
 exports.createDestination = async (req, res) => {
   try {
-    console.log('📥 Request body:', req.body); // ← TAMBAH LOG
-    console.log('📁 Request file:', req.file); // ← TAMBAH LOG
-
     const {
       name,
       region_id,
@@ -18,7 +13,6 @@ exports.createDestination = async (req, res) => {
       ticket_price
     } = req.body;
 
-    // Validate required fields
     if (!name || !region_id || !category_id || !description || !address) {
       return res.status(400).json({
         success: false,
@@ -26,11 +20,9 @@ exports.createDestination = async (req, res) => {
       });
     }
 
-    // Handle image upload with FULL PATH
     let imagePath = null;
     if (req.file) {
-      imagePath = `/uploads/destinations/${req.file.filename}`;
-      console.log('✅ Destination image uploaded:', imagePath); // ← TAMBAH LOG
+      imagePath = req.file.path;
     }
 
     const destinationData = {
@@ -46,11 +38,7 @@ exports.createDestination = async (req, res) => {
       created_by: req.user?.user_id || null
     };
 
-    console.log('📤 Creating destination with data:', destinationData); // ← TAMBAH LOG
-
     const destinationId = await Destination.create(destinationData);
-
-    console.log('✅ Destination created with ID:', destinationId); // ← TAMBAH LOG
 
     res.status(201).json({
       success: true,
@@ -58,7 +46,6 @@ exports.createDestination = async (req, res) => {
       data: { destination_id: destinationId }
     });
   } catch (error) {
-    console.error('❌ Error creating destination:', error);
     res.status(500).json({ 
       success: false, 
       message: 'Server error',
@@ -81,7 +68,6 @@ exports.updateDestination = async (req, res) => {
       ticket_price
     } = req.body;
 
-    // Check if destination exists
     const existingDestination = await Destination.findById(id);
     if (!existingDestination) {
       return res.status(404).json({
@@ -90,7 +76,6 @@ exports.updateDestination = async (req, res) => {
       });
     }
 
-    // Build update data object
     const updateData = {};
 
     if (name) updateData.name = name;
@@ -102,23 +87,8 @@ exports.updateDestination = async (req, res) => {
     if (longitude !== undefined) updateData.longitude = longitude || null;
     if (ticket_price !== undefined) updateData.ticket_price = ticket_price || 0;
 
-    // Handle image upload with FULL PATH
     if (req.file) {
-      // Delete old image if exists
-      if (existingDestination.image) {
-        const oldImageFilename = existingDestination.image.replace('/uploads/destinations/', '');
-        const oldImagePath = path.join(__dirname, '../public/uploads/destinations', oldImageFilename);
-        if (fs.existsSync(oldImagePath)) {
-          try {
-            fs.unlinkSync(oldImagePath);
-            console.log('✅ Old image deleted:', oldImagePath);
-          } catch (err) {
-            console.error('❌ Error deleting old image:', err);
-          }
-        }
-      }
-      updateData.image = `/uploads/destinations/${req.file.filename}`;
-      console.log('✅ New image uploaded:', updateData.image);
+      updateData.image = req.file.path;
     }
 
     await Destination.update(id, updateData);
@@ -128,7 +98,6 @@ exports.updateDestination = async (req, res) => {
       message: 'Destination updated successfully'
     });
   } catch (error) {
-    console.error('❌ Error updating destination:', error);
     res.status(500).json({ 
       success: false, 
       message: 'Server error',
@@ -141,27 +110,12 @@ exports.deleteDestination = async (req, res) => {
   try {
     const { id } = req.params;
 
-    // Check if destination exists
     const destination = await Destination.findById(id);
     if (!destination) {
       return res.status(404).json({
         success: false,
         message: 'Destination not found'
       });
-    }
-
-    // Delete image if exists
-    if (destination.image) {
-      const imageFilename = destination.image.replace('/uploads/destinations/', '');
-      const imagePath = path.join(__dirname, '../public/uploads/destinations', imageFilename);
-      if (fs.existsSync(imagePath)) {
-        try {
-          fs.unlinkSync(imagePath);
-          console.log('✅ Image deleted:', imagePath);
-        } catch (err) {
-          console.error('❌ Error deleting image:', err);
-        }
-      }
     }
 
     await Destination.delete(id);
@@ -171,7 +125,6 @@ exports.deleteDestination = async (req, res) => {
       message: 'Destination deleted successfully'
     });
   } catch (error) {
-    console.error('❌ Error deleting destination:', error);
     res.status(500).json({ 
       success: false, 
       message: 'Server error' 
@@ -191,7 +144,6 @@ exports.getDestinationById = async (req, res) => {
       });
     }
 
-    // Increment view count
     await Destination.incrementViewCount(id);
 
     res.json({
@@ -199,7 +151,6 @@ exports.getDestinationById = async (req, res) => {
       data: destination
     });
   } catch (error) {
-    console.error('❌ Error getting destination:', error);
     res.status(500).json({ 
       success: false, 
       message: 'Server error' 
@@ -218,7 +169,6 @@ exports.getAllDestinations = async (req, res) => {
       limit
     });
 
-    // Get total count for pagination
     let countQuery = 'SELECT COUNT(*) as total FROM destinations WHERE 1=1';
     const countParams = [];
 
@@ -245,7 +195,6 @@ exports.getAllDestinations = async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('❌ Error getting destinations:', error);
     res.status(500).json({ 
       success: false, 
       message: 'Server error' 

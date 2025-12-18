@@ -50,26 +50,21 @@ exports.getUserById = async (req, res) => {
   }
 };
 
-// ✅ FIX: Update Profile dengan File Upload
 exports.updateProfile = async (req, res) => {
   try {
     const userId = req.user.user_id;
     const updateData = {};
 
-    // Get text fields from body
     if (req.body.name) updateData.name = req.body.name;
     if (req.body.bio !== undefined) updateData.bio = req.body.bio;
     if (req.body.location !== undefined) updateData.location = req.body.location;
 
-    // Handle uploaded file
     if (req.file) {
-      updateData.profile_picture = `/uploads/profiles/${req.file.filename}`;
+      updateData.profile_picture = req.file.path;
     }
 
-    // Update database
     await User.update(userId, updateData);
 
-    // Get updated user data
     const updatedUser = await User.findById(userId);
 
     res.json({

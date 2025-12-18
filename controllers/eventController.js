@@ -1,6 +1,5 @@
 const Event = require('../models/Event');
 const EventParticipant = require('../models/EventParticipant');
-const { createSlug } = require('../utils/slugify');
 const { validationResult } = require('express-validator');
 
 exports.getAllEvents = async (req, res) => {
@@ -76,12 +75,11 @@ exports.createEvent = async (req, res) => {
 
     const eventData = {
       ...req.body,
-      slug: createSlug(req.body.title),
       created_by: req.user.user_id
     };
 
     if (req.file) {
-      eventData.image = `/uploads/events/${req.file.filename}`;
+      eventData.image = req.file.path;
     }
 
     const eventId = await Event.create(eventData);
@@ -231,7 +229,7 @@ exports.updateEvent = async (req, res) => {
     const updateData = { ...req.body };
 
     if (req.file) {
-      updateData.image = `/uploads/events/${req.file.filename}`;
+      updateData.image = req.file.path;
     }
 
     await Event.update(id, updateData);

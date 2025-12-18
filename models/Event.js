@@ -1,12 +1,23 @@
 const db = require('../config/database');
 
 class Event {
+  static generateSlug(title) {
+    return title
+      .toLowerCase()
+      .trim()
+      .replace(/[^\w\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-');
+  }
+
   static async create(eventData) {
     const {
-      created_by, destination_id, region_id, title, slug, description,
+      created_by, destination_id, region_id, title, description,
       event_date, event_time, meeting_point, latitude, longitude,
       max_participants, image
     } = eventData;
+
+    const slug = this.generateSlug(title);
 
     const [result] = await db.query(
       `INSERT INTO events (created_by, destination_id, region_id, title, slug, description, event_date, event_time, meeting_point, latitude, longitude, max_participants, image)
@@ -91,6 +102,11 @@ class Event {
       if (eventData[key] !== undefined) {
         fields.push(`${key} = ?`);
         values.push(eventData[key]);
+        
+        if (key === 'title') {
+          fields.push('slug = ?');
+          values.push(this.generateSlug(eventData[key]));
+        }
       }
     });
 

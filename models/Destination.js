@@ -1,14 +1,13 @@
 const db = require('../config/database');
 
 class Destination {
-  // ✅ Helper function untuk generate slug
   static generateSlug(name) {
     return name
       .toLowerCase()
       .trim()
-      .replace(/[^\w\s-]/g, '') // Remove special characters
-      .replace(/\s+/g, '-')     // Replace spaces with -
-      .replace(/-+/g, '-');     // Replace multiple - with single -
+      .replace(/[^\w\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-');
   }
 
   static async create(destinationData) {
@@ -25,10 +24,8 @@ class Destination {
       created_by
     } = destinationData;
 
-    // ✅ Generate slug from name
     const slug = this.generateSlug(name);
 
-    // ✅ FIX: Tambahkan slug ke query
     const [result] = await db.query(
       `INSERT INTO destinations 
        (name, slug, region_id, category_id, description, address, latitude, longitude, ticket_price, image, created_by, created_at, updated_at) 
@@ -52,14 +49,12 @@ class Destination {
       image
     } = destinationData;
 
-    // Build SET clause dynamically
     const updates = [];
     const values = [];
 
     if (name !== undefined) {
       updates.push('name = ?');
       values.push(name);
-      // ✅ Update slug juga kalau name berubah
       updates.push('slug = ?');
       values.push(this.generateSlug(name));
     }
@@ -96,10 +91,7 @@ class Destination {
       values.push(image);
     }
 
-    // Always update timestamp
     updates.push('updated_at = NOW()');
-
-    // Add destination_id to values
     values.push(destinationId);
 
     const [result] = await db.query(
