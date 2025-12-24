@@ -16,7 +16,7 @@ exports.sendFriendRequest = async (req, res) => {
     if (existingRequest) {
       return res.status(400).json({ 
         success: false, 
-        message: 'Permintaan ' 
+        message: 'Permintaan pertemanan sudah ada' 
       });
     }
 
