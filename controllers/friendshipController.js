@@ -24,7 +24,7 @@ exports.sendFriendRequest = async (req, res) => {
 
     res.status(201).json({
       success: true,
-      message: 'Permintaan pertemanan berhasil dikirim',
+      message: 'berhasil dikirim',
       data: { friendship_id: friendshipId }
     });
   } catch (error) {
