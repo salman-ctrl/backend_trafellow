@@ -8,7 +8,6 @@ require('dotenv').config();
 const app = express();
 const server = http.createServer(app);
 
-
 const allowedOrigin = process.env.FRONTEND_URL || 'http://localhost:3000';
 
 const corsOptions = {
